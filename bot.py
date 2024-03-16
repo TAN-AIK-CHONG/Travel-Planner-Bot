@@ -5,6 +5,7 @@ import requests
 from telebot import types
 from search import kiwi_location_search
 import datetime
+import pycountry_convert
 
 load_dotenv('.env')
 BOT_TOKEN = os.getenv('BOT_TOKEN')
@@ -39,7 +40,7 @@ def generate_buttons(bts_names,width):
 def generate_inline(bts_names,width):
     btn_list =[]
     for buttons in bts_names:
-        btn_list.append(types.InlineKeyboardButton(buttons, url='abc.com'))
+        btn_list.append(types.InlineKeyboardButton(buttons, callback_data=pycountry_convert.country_name_to_country_alpha2(buttons, cn_name_format="default")))
     markup = types.InlineKeyboardMarkup(row_width=width)
     markup.add(*btn_list)
     return markup
@@ -47,7 +48,7 @@ def generate_inline(bts_names,width):
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     markup = generate_buttons(['/flight','/hotel'],2)
-    bot.reply_to(message, "Hi, I'm ExpeditionExpertBot! I'll help you plan an itinerary for your vacation. /flight or /hotel to begin.",
+    bot.reply_to(message, "Hi, I'm ExpeditionExpertBot! I'll help you source cheap flights and hotels. /flight or /hotel to begin.",
                  reply_markup=markup)
     
 @bot.message_handler(commands=['flight'])
@@ -187,7 +188,16 @@ def confirmation(message):
         confirmation_message += "\nThank you for confirming!"
         bot.send_message(chat_id, confirmation_message)
         
-@bot.callback_query_handler(function=lambda call:True)
-def 
+@bot.callback_query_handler(func=lambda call:True)
+def covert_country_code(callback):
+    if callback.message: 
+        #store user partner_country in flight_info
+        chat_id = callback.message.chat.id
+        users[chat_id]["flight_info"]["partner_country"] = callback.data
+        bot.send_message(chat_id, f"Your selected country code is: {callback.data}")
+    else:
+        bot.send_message(chat_id, "An error occured. Please restart.")
+
+                
     
 bot.infinity_polling()  
