@@ -3,8 +3,8 @@ from dotenv import load_dotenv
 import telebot
 import requests
 from telebot import types
-from search import kiwi_location_search
-import datetime
+from search import kiwi_location_search, kiwi_flight_search
+from datetime import datetime, timedelta
 import pycountry_convert
 
 load_dotenv('.env')
@@ -147,7 +147,7 @@ def ask_date(message):
     date_format = "%d.%m.%Y"  # Date format to expect
     try:
         # Attempt to parse the received message as a date
-        date = datetime.datetime.strptime(message.text, date_format).date()
+        date = datetime.strptime(message.text, date_format).date()
         # If successful, proceed to the next step
         users[chat_id]["flight_info"]["date_from"] = message.text
         bot.reply_to(message, "When is the return flight? (Enter the date in DD.MM.YYYY)")
@@ -162,7 +162,7 @@ def ask_return(message):
     date_format = "%d.%m.%Y"  # Date format to expect
     try:
         # Attempt to parse the received message as a date
-        date = datetime.datetime.strptime(message.text, date_format).date()
+        date = datetime.strptime(message.text, date_format).date()
         # If successful, proceed to confirmation
         users[chat_id]["flight_info"]["return_from"] = message.text
         flight_info = users[chat_id]["flight_info"]
@@ -187,6 +187,53 @@ def confirmation(message):
         confirmation_message += f"Return Date: {flight_info['return_from']}\n"
         confirmation_message += "\nThank you for confirming!"
         bot.send_message(chat_id, confirmation_message)
+        bot.register_next_step_handler(message, search_flights)
+
+def search_flights(message):
+    chat_id = message.chat.id
+    flight_info = users.get(chat_id, {}).get("flight_info")
+
+    if flight_info:
+        # Extract necessary information for flight search
+        partner_market = flight_info.get("partner_market")
+        fly_from = flight_info.get("fly_from_iata")
+        fly_to = flight_info.get("fly_to_iata")
+        date_from_init = flight_info.get("date_from")
+        return_from_init = flight_info.get("return_from")
+
+        # Convert date format from DD.MM.YYYY to DD/MM/YYYY and subtract 1 day
+        date_from = (datetime.strptime(date_from_init, "%d.%m.%Y") - timedelta(days=1)).strftime("%d/%m/%Y")
+        return_from = (datetime.strptime(return_from_init, "%d.%m.%Y") - timedelta(days=1)).strftime("%d/%m/%Y")
+        date_to = (datetime.strptime(date_from_init, "%d.%m.%Y") + timedelta(days=1)).strftime("%d/%m/%Y")
+        return_to = (datetime.strptime(return_from_init, "%d.%m.%Y") + timedelta(days=1)).strftime("%d/%m/%Y")
+
+        # Perform flight search using the extracted information
+        flight_search_results = kiwi_flight_search(fly_from, fly_to, date_from, date_to, return_from, return_to, partner_market)
+
+        if flight_search_results:
+            flights_info = []
+            # Display the found flights to the user
+            flight_message = "Here are some available flights:\n\n"
+            for flight in flight_search_results:
+                price = int(flight["price"])
+                flight_info = {
+                    "price": flight["price"],
+                    "airline": flight["airlines"][0],  # Assuming there's only one airline per flight
+                    "flight_number": flight["route"][0]["flight_no"],  # Taking the first flight number
+                    "city_from": flight["cityFrom"],
+                    "city_to": flight["cityTo"],
+                    "return": flight["route"][0]["return"],
+                    "fare_classes": flight["route"][0]["fare_classes"],
+                }
+                flights_info.append(flight_info)
+                flight_message += f"Price: {flight_info['price']} {flight_info['airline']} {flight_info['flight_number']} {flight_info['city_from']} to {flight_info['city_to']} ({flight_info['fare_classes']})\n"
+
+            bot.send_message(chat_id, flight_message)
+        else:
+            bot.send_message(chat_id, "No flights found for the given criteria.")
+    else:
+        bot.send_message(chat_id, "Information not found. Please start a new search.")
+
         
 @bot.callback_query_handler(func=lambda call:True)
 def covert_country_code(callback):
@@ -199,5 +246,5 @@ def covert_country_code(callback):
         bot.send_message(chat_id, "An error occured. Please restart.")
 
                 
-    
+
 bot.infinity_polling()  
