@@ -7,13 +7,18 @@ from search import kiwi_location_search, kiwi_flight_search
 from datetime import datetime, timedelta
 import pycountry_convert
 
+#get bot token from env file (security practice)
 load_dotenv('.env')
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 
+#initialise the bot
 bot = telebot.TeleBot(BOT_TOKEN)
+
+#initialise dictionary to store all concurrent user's and their inputs
 users = {}
 
 #country lists used to select partner_market
+#i might change this to a list of lists
 countryList1 = []
 countryList2 = []
 countryList3 = []
@@ -29,6 +34,7 @@ with open("countries3.txt", "r") as countryList:
     for row in countryList:
         countryList3.append(row.rstrip())
 
+#function to generate keyboard buttons
 def generate_buttons(bts_names,width):
     btn_list =[]
     for buttons in bts_names:
@@ -37,6 +43,8 @@ def generate_buttons(bts_names,width):
     markup.add(*btn_list)
     return markup
 
+#function to generate inline buttons (in text)
+#specifially will generate buttons for country code
 def generate_inline(bts_names,width):
     btn_list =[]
     for buttons in bts_names:
@@ -53,15 +61,13 @@ def send_welcome(message):
     
 @bot.message_handler(commands=['flight'])
 def ask_origin(message):
+    #create user's ID
     chat_id = message.chat.id
     users[chat_id] = {"flight_info": {}}
     markup = generate_inline(countryList1, 3)
     bot.send_message(chat_id, "Please select your home country:", reply_markup=markup)
-    bot.register_next_step_handler(message, ask_depart)
     
 def ask_depart(message):
-    chat_id = message.chat.id
-    users[chat_id]["flight_info"]["partner_market"] = message.text
     bot.reply_to(message, "Which city is the flight departing from?")
     bot.register_next_step_handler(message, search_departure_city)
 
@@ -78,12 +84,12 @@ def search_departure_city(message):
 
     if search_results and search_results['results_retrieved'] > 0:
         # Create buttons for each search result
-        markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         for location in search_results['locations']:
             button_text = f"{location['name']} ({location['code']})"
             markup.add(button_text)
 
-        bot.reply_to(message, "Please select the departure city:", reply_markup=markup)
+        bot.send_message(chat_id, "Please select the departure city:", reply_markup=markup)
         bot.register_next_step_handler(message, select_departure_city)
     else:
         bot.reply_to(message, "No cities found. Please enter departure city again.")
@@ -121,7 +127,7 @@ def search_arrival_city(message):
             button_text = f"{location['name']} ({location['code']})"
             markup.add(button_text)
 
-        bot.reply_to(message, "Please select the arrival city:", reply_markup=markup)
+        bot.send_message(chat_id, "Please select the arrival city:", reply_markup=markup)
         bot.register_next_step_handler(message, select_arrival_city)
     else:
         bot.reply_to(message, "No cities found. Please enter arrival city again.")
@@ -139,7 +145,7 @@ def select_arrival_city(message):
 
     bot.reply_to(message, f"You've selected {selected_city_name}.")
     markup = telebot.types.ReplyKeyboardRemove()
-    bot.reply_to(message, "Please input the departure date in DD.MM.YYYY format. eg. 24.04.2024 is 24 April 2024")
+    bot.send_message(chat_id, "Please input the departure date in DD.MM.YYYY format. eg. 24.04.2024 is 24 April 2024", reply_markup = markup)
     bot.register_next_step_handler(message, ask_date)
     
 def ask_date(message):
@@ -210,6 +216,8 @@ def search_flights(message):
         # Perform flight search using the extracted information
         flight_search_results = kiwi_flight_search(fly_from, fly_to, date_from, date_to, return_from, return_to, partner_market)
 
+        
+        ##to be edited!!
         if flight_search_results:
             flights_info = []
             # Display the found flights to the user
@@ -236,14 +244,16 @@ def search_flights(message):
 
         
 @bot.callback_query_handler(func=lambda call:True)
-def covert_country_code(callback):
+def get_country_code(callback):
     if callback.message: 
         #store user partner_country in flight_info
         chat_id = callback.message.chat.id
-        users[chat_id]["flight_info"]["partner_country"] = callback.data
+        users[chat_id]["flight_info"]["partner_market"] = callback.data
         bot.send_message(chat_id, f"Your selected country code is: {callback.data}")
+        ask_depart(callback.message)
     else:
         bot.send_message(chat_id, "An error occured. Please restart.")
+    
 
                 
 
