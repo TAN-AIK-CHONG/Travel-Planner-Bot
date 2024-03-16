@@ -1,12 +1,13 @@
 import os
 from dotenv import load_dotenv
 import telebot
-from flask import Flask, request,  jsonify, render_template
-import requests
+from geopy.geocoders import GoogleV3
 
 load_dotenv('.env')
 BOT_TOKEN = os.getenv('BOT_TOKEN')
-GEOFINDER_KEY = os.getenv('GEOFINDER_KEY')
+GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
+
+geolocator = GoogleV3(api_key=GOOGLE_API_KEY)
 
 bot = telebot.TeleBot(BOT_TOKEN)
 user_states ={}
@@ -17,14 +18,14 @@ def send_welcome(message):
     
 @bot.message_handler(commands=['itinerary'])
 def ask_city(message):
-    user_states[message.chat.id] = 'waiting_for_city'
     bot.reply_to(message, "Which city are you planning on visiting?")
+    bot.register_next_step_handler(message, process_location)
     
-@bot.message_handler(content_types=['location'], func=lambda message: user_states.get(message.chat.id) == 'waiting_for_city')
 def process_location(message):
-    latitude = message.location.latitude
-    longitude = message.location.longitude
-    del user_states[message.chat.id]  # Remove the user state
-    bot.reply_to(message, f"The location latitude is {latitude} and the location longitude is {longitude}")
+    city_name = message.text
+    location = geolocator.geocode(city_name)
+    latitude = location.latitude
+    longitude = location.longitude
+    bot.send_message(message.from_user.id, f"The location latitude is {latitude} and the location longitude is {longitude}")
         
-bot.infinity_polling()
+bot.infinity_polling()  
