@@ -4,18 +4,12 @@
 
 1. Dotenv
     
-    bash```
+    ```bash
     pip install python-dotenv
     ```
 
 2. pyTelegramBotAPI
 
-    bash```
+    ```bash
     pip install pyTelegramBotAPI
-    '''
-
-3. geopy
-
-    bash```
-    pip install geopy
     ```
