@@ -212,21 +212,32 @@ def search_flights(message):
 
         if flight_search_results:
             flights_info = []
-            # Display the found flights to the user
-            flight_message = "Here are some available flights:\n\n"
+            flight_search_results = flight_search_results.get("data", [])
+            flight_search_results = flight_search_results[:3]
             for flight in flight_search_results:
-                price = int(flight["price"])
-                flight_info = {
-                    "price": flight["price"],
-                    "airline": flight["airlines"][0],  # Assuming there's only one airline per flight
-                    "flight_number": flight["route"][0]["flight_no"],  # Taking the first flight number
-                    "city_from": flight["cityFrom"],
-                    "city_to": flight["cityTo"],
-                    "return": flight["route"][0]["return"],
-                    "fare_classes": flight["route"][0]["fare_classes"],
-                }
-                flights_info.append(flight_info)
-                flight_message += f"Price: {flight_info['price']} {flight_info['airline']} {flight_info['flight_number']} {flight_info['city_from']} to {flight_info['city_to']} ({flight_info['fare_classes']})\n"
+                deep_link = flight["deep_link"]
+                price = flight["price"]
+                local_departure = flight["local_departure"]
+                local_arrival = flight["local_arrival"]
+                airline = flight["airlines"][0]  # Assuming there's only one airline per flight
+                flight_number = flight["route"][0]["flight_no"]  # Taking the first flight number
+
+                # Append extracted information to flights_info list
+                flights_info.append({
+                    "deep_link": deep_link,
+                    "price": price,
+                    "local_departure": local_departure,
+                    "local_arrival": local_arrival,
+                    "airline": airline,
+                    "flight_number": flight_number
+                })
+
+            # Format the flight information for sending
+            flight_message = "Here are some available flights:\n\n"
+            for info in flights_info:
+                flight_message += f"Price: {info['price']}, Airline: {info['airline']}, Flight Number: {info['flight_number']}\n"
+                flight_message += f"Departure: {info['local_departure']}, Arrival: {info['local_arrival']}\n"
+                flight_message += f"Deep Link: {info['deep_link']}\n\n"
 
             bot.send_message(chat_id, flight_message)
         else:
