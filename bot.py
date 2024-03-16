@@ -12,6 +12,22 @@ BOT_TOKEN = os.getenv('BOT_TOKEN')
 bot = telebot.TeleBot(BOT_TOKEN)
 users = {}
 
+#country lists used to select partner_market
+countryList1 = []
+countryList2 = []
+countryList3 = []
+with open("countries1.txt", "r") as countryList:
+    for row in countryList:
+        countryList1.append(row.rstrip())
+
+with open("countries2.txt", "r") as countryList:
+    for row in countryList:
+        countryList2.append(row.rstrip())
+        
+with open("countries3.txt", "r") as countryList:
+    for row in countryList:
+        countryList3.append(row.rstrip())
+
 def generate_buttons(bts_names,width):
     btn_list =[]
     for buttons in bts_names:
@@ -38,37 +54,7 @@ def send_welcome(message):
 def ask_origin(message):
     chat_id = message.chat.id
     users[chat_id] = {"flight_info": {}}
-    
-    
-    country_buttons1 = ['Australia', 'Austria', 'Bangladesh',
-                        'Brazil', 'Canada', 'Czech Republic',
-                       'Denmark', 'France', 'Germany',
-                       'Ghana', 'India', 'Indonesia',
-                       'Iran', 'Italy', 'Malaysia',
-                       'Netherlands', 'Nigeria', 'Pakistan',
-                       'Poland', 'Portugal', 'Spain',
-                       'Turkey', 'Ukraine', 'United Arab Emirates',
-                       'United Kingdom', 'United States']
-    
-    """ country_buttons2 = ['Algeria', 'Argentina', 'Bahrain',
-                       'Belgium', 'Bolivia', 'Chile'
-                       'Colombia', 'Ecuador', 'Estonia',
-                       'Ethopia', 'Finland', 'Hong Kong',
-                       'Israel', 'Kazakhstan', 'Kenya',
-                       'Kuwait', 'Mexico', 'Morocco',
-                       'New Zealand', 'Norway', 'Oman',
-                       'Saudi Arabia', 'Singapore', 'South Africa']
-    
-    country_buttons3 = ['Egypt', 'Greece', 'Iceland',
-                       'Ireland', 'Japan', 'Lebanon'
-                       'Nicaragua', 'Peru', 'Phillippines',
-                       'Qatar', 'Romania', 'South Korea',
-                       'Sweden', 'Taiwan', 'Tanzania',
-                       'Thailand', 'Zimbabwe'] """
-    
-    
-      
-    markup = generate_inline(country_buttons1, 3)
+    markup = generate_inline(countryList1, 3)
     bot.send_message(chat_id, "Please select your home country:", reply_markup=markup)
     bot.register_next_step_handler(message, ask_depart)
     
@@ -198,5 +184,8 @@ def confirmation(message):
         confirmation_message += f"Return Date: {flight_info['return_from']}\n"
         confirmation_message += "\nThank you for confirming!"
         bot.send_message(chat_id, confirmation_message)
+        
+@bot.callback_query_handler(function=lambda call:True)
+def 
     
 bot.infinity_polling()  
