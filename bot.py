@@ -75,7 +75,7 @@ def search_departure_city(message):
     # Perform location search
     search_results = kiwi_location_search(term, locale, location_types, limit, active_only)
 
-    if search_results and 'locations' in search_results:
+    if search_results and search_results['results_retrieved'] > 0:
         # Create buttons for each search result
         markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
         for location in search_results['locations']:
@@ -85,7 +85,8 @@ def search_departure_city(message):
         bot.reply_to(message, "Please select the departure city:", reply_markup=markup)
         bot.register_next_step_handler(message, select_departure_city)
     else:
-        bot.reply_to(message, "No cities found. Please try again.")
+        bot.reply_to(message, "No cities found. Please enter departure city again.")
+        bot.register_next_step_handler(message, search_departure_city)
 
 def select_departure_city(message):
     chat_id = message.chat.id
@@ -112,7 +113,7 @@ def search_arrival_city(message):
     # Perform location search
     search_results = kiwi_location_search(term, locale, location_types, limit, active_only)
 
-    if search_results and 'locations' in search_results:
+    if search_results and search_results['results_retrieved'] > 0:
         # Create buttons for each search result
         markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
         for location in search_results['locations']:
@@ -122,7 +123,8 @@ def search_arrival_city(message):
         bot.reply_to(message, "Please select the arrival city:", reply_markup=markup)
         bot.register_next_step_handler(message, select_arrival_city)
     else:
-        bot.reply_to(message, "No cities found. Please try again.")
+        bot.reply_to(message, "No cities found. Please enter arrival city again.")
+        bot.register_next_step_handler(message, search_arrival_city)
 
 def select_arrival_city(message):
     chat_id = message.chat.id
@@ -163,7 +165,7 @@ def ask_return(message):
         # If successful, proceed to confirmation
         users[chat_id]["flight_info"]["return_from"] = message.text
         flight_info = users[chat_id]["flight_info"]
-        bot.reply_to(message, f"Confirm your details\nHome Country: {flight_info['partner_market']}\nDeparture City: {flight_info['fly_from']}\nArrival City: {flight_info['fly_to']}\nFlight date: {flight_info['date_from']}\nReturn Date: {flight_info['return_from']}")
+        bot.reply_to(message, f"Confirm your details?\nHome Country: {flight_info['partner_market']}\nDeparture City: {flight_info['fly_from']}\nArrival City: {flight_info['fly_to']}\nFlight date: {flight_info['date_from']}\nReturn Date: {flight_info['return_from']}\nEnter 'confirm' to confirm.")
         bot.register_next_step_handler(message, confirmation)
     except ValueError:
         # If the received message is not in the expected date format, ask again
