@@ -12,10 +12,4 @@
 
     bash```
     pip install pyTelegramBotAPI
-    '''
-
-3. geopy
-
-    bash```
-    pip install geopy
     ```
