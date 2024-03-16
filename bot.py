@@ -70,6 +70,7 @@ def ask_origin(message):
       
     markup = generate_inline(country_buttons1, 3)
     bot.send_message(chat_id, "Please select your home country:", reply_markup=markup)
+    bot.register_next_step_handler(message, ask_depart)
     
 def ask_depart(message):
     chat_id = message.chat.id
@@ -180,13 +181,22 @@ def ask_return(message):
         bot.register_next_step_handler(message, confirmation)
     except ValueError:
         # If the received message is not in the expected date format, ask again
-        bot.reply_to(message, "Please input the date in DD.MM.YYYY format. eg. 24.04.2024 is 24 April 2024")
+        bot.reply_to(message, "Error! Please input the return date in DD.MM.YYYY format. eg. 24.04.2024 is 24 April 2024")
         bot.register_next_step_handler(message, ask_return)
 
 def confirmation(message):
     chat_id = message.chat.id
     confirmation_text = message.text.lower()
     flight_info = users[chat_id]["flight_info"]
-    bot.reply_to(message, f"Confirm your details\nHome Country: {flight_info['partner_market']}\nDeparture City: {flight_info['fly_from']}\nArrival City: {flight_info['fly_to']}\nFlight date: {flight_info['date_from']}\nReturn Date: {flight_info['return_from']}")
+
+    if confirmation_text == 'confirm':
+        confirmation_message = f"Your flight details have been confirmed:\n\n"
+        confirmation_message += f"Home Country: {flight_info['partner_market']}\n"
+        confirmation_message += f"Departure City: {flight_info['fly_from']}\n"
+        confirmation_message += f"Arrival City: {flight_info['fly_to']}\n"
+        confirmation_message += f"Flight date: {flight_info['date_from']}\n"
+        confirmation_message += f"Return Date: {flight_info['return_from']}\n"
+        confirmation_message += "\nThank you for confirming!"
+        bot.send_message(chat_id, confirmation_message)
     
 bot.infinity_polling()  
