@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 import telebot
 import requests
+from telebot import types
 from search import kiwi_location_search
 import datetime
 
@@ -11,16 +12,64 @@ BOT_TOKEN = os.getenv('BOT_TOKEN')
 bot = telebot.TeleBot(BOT_TOKEN)
 users = {}
 
+def generate_buttons(bts_names,width):
+    btn_list =[]
+    for buttons in bts_names:
+        btn_list.append(types.KeyboardButton(buttons))
+    markup = types.ReplyKeyboardMarkup(row_width=width)
+    markup.add(*btn_list)
+    return markup
+
+def generate_inline(bts_names,width):
+    btn_list =[]
+    for buttons in bts_names:
+        btn_list.append(types.InlineKeyboardButton(buttons, url='abc.com'))
+    markup = types.InlineKeyboardMarkup(row_width=width)
+    markup.add(*btn_list)
+    return markup
+
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    bot.reply_to(message, "Hi, I'm ExpeditionExpertBot! I'll help you plan an itinerary for your vacation. /flight or /hotel to begin.")
+    markup = generate_buttons(['/flight','/hotel'],2)
+    bot.reply_to(message, "Hi, I'm ExpeditionExpertBot! I'll help you plan an itinerary for your vacation. /flight or /hotel to begin.",
+                 reply_markup=markup)
     
 @bot.message_handler(commands=['flight'])
 def ask_origin(message):
     chat_id = message.chat.id
     users[chat_id] = {"flight_info": {}}
-    bot.reply_to(message, "What is your home country?")
-    bot.register_next_step_handler(message, ask_depart)
+    
+    
+    country_buttons1 = ['Australia', 'Austria', 'Bangladesh',
+                        'Brazil', 'Canada', 'Czech Republic',
+                       'Denmark', 'France', 'Germany',
+                       'Ghana', 'India', 'Indonesia',
+                       'Iran', 'Italy', 'Malaysia',
+                       'Netherlands', 'Nigeria', 'Pakistan',
+                       'Poland', 'Portugal', 'Spain',
+                       'Turkey', 'Ukraine', 'United Arab Emirates',
+                       'United Kingdom', 'United States']
+    
+    """ country_buttons2 = ['Algeria', 'Argentina', 'Bahrain',
+                       'Belgium', 'Bolivia', 'Chile'
+                       'Colombia', 'Ecuador', 'Estonia',
+                       'Ethopia', 'Finland', 'Hong Kong',
+                       'Israel', 'Kazakhstan', 'Kenya',
+                       'Kuwait', 'Mexico', 'Morocco',
+                       'New Zealand', 'Norway', 'Oman',
+                       'Saudi Arabia', 'Singapore', 'South Africa']
+    
+    country_buttons3 = ['Egypt', 'Greece', 'Iceland',
+                       'Ireland', 'Japan', 'Lebanon'
+                       'Nicaragua', 'Peru', 'Phillippines',
+                       'Qatar', 'Romania', 'South Korea',
+                       'Sweden', 'Taiwan', 'Tanzania',
+                       'Thailand', 'Zimbabwe'] """
+    
+    
+      
+    markup = generate_inline(country_buttons1, 3)
+    bot.send_message(chat_id, "Please select your home country:", reply_markup=markup)
     
 def ask_depart(message):
     chat_id = message.chat.id
@@ -138,15 +187,6 @@ def confirmation(message):
     chat_id = message.chat.id
     confirmation_text = message.text.lower()
     flight_info = users[chat_id]["flight_info"]
-
-    if confirmation_text == 'confirm':
-        confirmation_message = f"Your flight details have been confirmed:\n\n"
-        confirmation_message += f"Home Country: {flight_info['partner_market']}\n"
-        confirmation_message += f"Departure City: {flight_info['fly_from']}\n"
-        confirmation_message += f"Arrival City: {flight_info['fly_to']}\n"
-        confirmation_message += f"Flight date: {flight_info['date_from']}\n"
-        confirmation_message += f"Return Date: {flight_info['return_from']}\n"
-        confirmation_message += "\nThank you for confirming!"
-        bot.send_message(chat_id, confirmation_message)
+    bot.reply_to(message, f"Confirm your details\nHome Country: {flight_info['partner_market']}\nDeparture City: {flight_info['fly_from']}\nArrival City: {flight_info['fly_to']}\nFlight date: {flight_info['date_from']}\nReturn Date: {flight_info['return_from']}")
     
 bot.infinity_polling()  
