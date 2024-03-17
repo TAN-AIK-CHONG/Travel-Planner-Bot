@@ -32,9 +32,10 @@ def extract_flight_info(flight):
     price = flight["price"]
     local_departure = datetime.strptime(flight["local_departure"], "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%d-%m-%Y, %H:%M")
     local_arrival = datetime.strptime(flight["local_arrival"], "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%d-%m-%Y, %H:%M")
-    airline = flight["airlines"][0]  # Assuming there's only one airline per flight
+    airlines = flight["airlines"]
     route = flight["route"]
     return_departure = None
+    return_arrival = None
     onward_stops = -1
     return_stops = -1
     for segment in route:
@@ -61,7 +62,7 @@ def extract_flight_info(flight):
         "return_arrival": return_arrival,
         "onward_stops": onward_stops,
         "return_stops": return_stops,
-        "airline": airline,
+        "airlines": airlines,
     }
 
 def format_flight_info(info, currency):
@@ -73,14 +74,21 @@ def format_flight_info(info, currency):
         flight_message += f"\U0001F504 Stops: {info['onward_stops']}\n"
     flight_message += f"\U0001F6EB Departure: {info['local_departure']}\n"
     flight_message += f"\U0001F6EC Arrival: {info['local_arrival']}\n\n"
-    flight_message += f"<b>{info['city_to']} ({info['fly_to']}) - {info['city_from']} ({info['fly_from']})</b>\n"
-    if info['return_stops'] < 1:
-        flight_message += "\U0001F504 Direct\n"
-    else:
-        flight_message += f"\U0001F504 Stops: {info['return_stops']}\n"
-    flight_message += f"\U0001F6EB Departure: {info['return_departure']}\n"
-    flight_message += f"\U0001F6EC Arrival: {info['return_arrival']}\n\n"
-    flight_message += f"Price: {currency} {info['price']}, Airline: {info['airline']}\n"
+    ## Print the following if there is a return flight
+    if info["return_departure"] is not None and info["return_arrival"] is not None:
+        flight_message += f"<b>{info['city_to']} ({info['fly_to']}) - {info['city_from']} ({info['fly_from']})</b>\n"
+        if info['return_stops'] < 1:
+            flight_message += "\U0001F504 Direct\n"
+        else:
+            flight_message += f"\U0001F504 Stops: {info['return_stops']}\n"
+        flight_message += f"\U0001F6EB Departure: {info['return_departure']}\n"
+        flight_message += f"\U0001F6EC Arrival: {info['return_arrival']}\n\n"
+    flight_message += f"Price: {currency} {info['price']}, "
+    flight_message += "Airlines: "
+    for airline in info['airlines']:
+        flight_message += f"{airline}, "
+    flight_message = flight_message[:-2]  # Remove the last comma and space
+    flight_message += "\n"
     flight_message += f"\U0001F517 <a href='{info['deep_link']}'>More Details/Book</a>\n"
     flight_message += "_____________________________\n\n"
 
