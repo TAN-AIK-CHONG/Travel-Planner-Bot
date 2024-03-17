@@ -36,7 +36,7 @@ def kiwi_location_search(term, locale, location_types, limit, active_only):
 
 
 
-def kiwi_flight_search(origin, destination, date_from, date_to, return_from, return_to, partner_market):
+def kiwi_flight_search(origin, destination, date_from, date_to, return_from, return_to, partner_market, currency):
     load_dotenv('.env')
     KIWI_KEY = os.getenv('KIWI_KEY') 
     endpoint = "https://tequila-api.kiwi.com/v2/search"
@@ -48,7 +48,8 @@ def kiwi_flight_search(origin, destination, date_from, date_to, return_from, ret
         "date_to": date_to,
         "return_from": return_from,
         "return_to": return_to,
-        "partner_market": partner_market
+        "partner_market": partner_market,
+        "curr": currency
     }
 
     headers = {
