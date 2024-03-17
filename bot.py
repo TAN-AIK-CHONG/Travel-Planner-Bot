@@ -55,11 +55,6 @@ def generate_inline(bts_names,width):
     markup.add(*btn_list)
     return markup
 
-#function to edit existing InlineKeyboard
-def edit_message(message_id, chat_id, keyboard):
-    bot.edit_message_reply_markup(chat_id=chat_id, message_id=message_id, reply_markup=keyboard)
-
-
 #<-------------------------------------MAIN BODY------------------------------------->#
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
@@ -284,7 +279,7 @@ def get_country_code(callback):
                 btn_prev = types.InlineKeyboardButton("<", callback_data="BUTTON_PREV")
                 kb.add(btn_prev)
             
-            edit_message(callback.message.message_id, callback.message.chat.id, kb)
+            bot.edit_message_reply_markup(chat_id=callback.message.chat.id, message_id=callback.message.message_id, reply_markup=kb)
         else:
             chat_id = callback.message.chat.id
             users[chat_id]["flight_info"]["partner_market"] = callback.data
