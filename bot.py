@@ -5,6 +5,7 @@ from telebot import types
 from search import kiwi_location_search, kiwi_flight_search
 from datetime import datetime, timedelta
 import pycountry_convert
+import funcs
 
 #get bot token from env file (security practice)
 load_dotenv('.env')
@@ -264,31 +265,13 @@ def search_flights(message):
             flight_search_results = flight_search_results.get("data", [])
             flight_search_results = flight_search_results[:5]
             for flight in flight_search_results:
-                deep_link = flight["deep_link"]
-                price = flight["price"]
-                local_departure = datetime.strptime(flight["local_departure"], "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%d-%m-%Y, %H:%M")
-                local_arrival = datetime.strptime(flight["local_arrival"], "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%d-%m-%Y, %H:%M")
-                airline = flight["airlines"][0]  # Assuming there's only one airline per flight
-                flight_number = flight["route"][0]["flight_no"]  # Taking the first flight number
-
-               
-                # Append extracted information to flights_info list
-                flights_info.append({
-                    "deep_link": deep_link,
-                    "price": price,
-                    "local_departure": local_departure,
-                    "local_arrival": local_arrival,
-                    "airline": airline,
-                    "flight_number": flight_number
-                })
+                flight_info = funcs.extract_flight_info(flight)
+                flights_info.append(flight_info)
 
             # Format the flight information for sending
             flight_message = "Here are some available flights:\n\n"
             for info in flights_info:
-                flight_message += f"Price: EUR {info['price']}, Airline: {info['airline']}, Flight Number: {info['flight_number']}\n"
-                flight_message += f"Departure: {info['local_departure']}, Arrival: {info['local_arrival']}\n"
-                flight_message += f"<a href='{info['deep_link']}'>More Details/Book</a>\n\n"
-
+                flight_message += funcs.format_flight_info(info)
 
             bot.send_message(chat_id, flight_message, parse_mode='HTML')
         else:
