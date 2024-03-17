@@ -18,21 +18,23 @@ bot = telebot.TeleBot(BOT_TOKEN)
 users = {}
 
 #country lists used to select partner_market
-#i might change this to a list of lists
-countryList1 = []
-countryList2 = []
-countryList3 = []
-with open("countries1.txt", "r") as countryList:
-    for row in countryList:
-        countryList1.append(row.rstrip())
+#l1 = countryList1, l2 = countryList2, l3 = countryList3 
+countryList = [[],[],[]]
 
-with open("countries2.txt", "r") as countryList:
-    for row in countryList:
-        countryList2.append(row.rstrip())
+with open("countries1.txt", "r") as file:
+    for row in file:
+        countryList[0].append(row.rstrip())
+
+with open("countries2.txt", "r") as file:
+    for row in file:
+        countryList[1].append(row.rstrip())
         
-with open("countries3.txt", "r") as countryList:
-    for row in countryList:
-        countryList3.append(row.rstrip())
+with open("countries3.txt", "r") as file:
+    for row in file:
+        countryList[2].append(row.rstrip())
+
+#Initialise pages for buttons
+PAGE = 0
 
 #function to generate keyboard buttons
 def generate_buttons(bts_names,width):
@@ -53,6 +55,12 @@ def generate_inline(bts_names,width):
     markup.add(*btn_list)
     return markup
 
+#function to edit existing InlineKeyboard
+def edit_message(message_id, chat_id, keyboard):
+    bot.edit_message_reply_markup(chat_id=chat_id, message_id=message_id, reply_markup=keyboard)
+
+
+#<-------------------------------------MAIN BODY------------------------------------->#
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     markup = generate_buttons(['/flight','/hotel'],2)
@@ -64,8 +72,10 @@ def ask_origin(message):
     #create user's ID
     chat_id = message.chat.id
     users[chat_id] = {"flight_info": {}}
-    markup = generate_inline(countryList1, 3)
-    bot.send_message(chat_id, "Please select your home country:", reply_markup=markup)
+    btn_next = types.InlineKeyboardButton(">", callback_data="BUTTON_NEXT")
+    kb1 = generate_inline(countryList[0], 3)
+    kb1.add(btn_next)
+    bot.send_message(chat_id, "Please select your home country:", reply_markup=kb1)
     
 def ask_depart(message):
     bot.reply_to(message, "Which city is the flight departing from?")
@@ -257,13 +267,34 @@ def search_flights(message):
 @bot.callback_query_handler(func=lambda call:True)
 def get_country_code(callback):
     if callback.message: 
-        #store user partner_country in flight_info
-        chat_id = callback.message.chat.id
-        users[chat_id]["flight_info"]["partner_market"] = callback.data
-        bot.send_message(chat_id, f"Your selected country code is: {callback.data}")
-        ask_depart(callback.message)
+        if callback.data.startswith("BUTTON_"):
+            global PAGE
+            if callback.data == "BUTTON_NEXT":
+                PAGE += 1
+            elif callback.data == "BUTTON_PREV":
+                PAGE -= 1
+            kb = generate_inline(countryList[PAGE], 3)
+            if PAGE == 0:
+                kb.add(types.InlineKeyboardButton(">", callback_data="BUTTON_NEXT"))
+            elif PAGE == 1:
+                btn_next = types.InlineKeyboardButton(">", callback_data="BUTTON_NEXT")
+                btn_prev = types.InlineKeyboardButton("<", callback_data="BUTTON_PREV")
+                kb.add(btn_prev, btn_next)
+            elif PAGE == 2:
+                btn_prev = types.InlineKeyboardButton("<", callback_data="BUTTON_PREV")
+                kb.add(btn_prev)
+            
+            edit_message(callback.message.message_id, callback.message.chat.id, kb)
+        else:
+            chat_id = callback.message.chat.id
+            users[chat_id]["flight_info"]["partner_market"] = callback.data
+            bot.send_message(chat_id, f"Your selected country code is: {callback.data}")
+            ask_depart(callback.message)
+        
     else:
         bot.send_message(chat_id, "An error occured. Please restart.")
+
+
     
 
                 
