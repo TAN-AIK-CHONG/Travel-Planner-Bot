@@ -4,7 +4,6 @@ import telebot
 from telebot import types
 from search import kiwi_location_search, kiwi_flight_search
 from datetime import datetime, timedelta
-import pycountry_convert
 import funcs
 
 #get bot token from env file (security practice)
@@ -36,25 +35,6 @@ with open("countries3.txt", "r") as file:
 #Initialise pages for buttons
 PAGE = 0
 
-#function to generate keyboard buttons
-def generate_buttons(bts_names,width):
-    btn_list =[]
-    for buttons in bts_names:
-        btn_list.append(types.KeyboardButton(buttons))
-    markup = types.ReplyKeyboardMarkup(row_width=width)
-    markup.add(*btn_list)
-    return markup
-
-#function to generate inline buttons (in text)
-#specifially will generate buttons for country code
-def generate_inline(bts_names,width):
-    btn_list =[]
-    for buttons in bts_names:
-        btn_list.append(types.InlineKeyboardButton(buttons, callback_data=pycountry_convert.country_name_to_country_alpha2(buttons, cn_name_format="default")))
-    markup = types.InlineKeyboardMarkup(row_width=width)
-    markup.add(*btn_list)
-    return markup
-
 #function to help check if user input is command. only used for ask_depart/ ask_return/ ask_date functions
 def util_isCommand(message):
         command = message.text.split()[0]  # Extract the command
@@ -72,7 +52,7 @@ def util_isCommand(message):
 def send_welcome(message):
     chat_id = message.chat.id
     users[chat_id] = {}
-    markup = generate_buttons(['/flight','/hotel'],1)
+    markup = funcs.generate_buttons(['/flight','/hotel'],1)
     bot.reply_to(message, "Hi, I'm ExpeditionExpertBot! I'll help you source cheap flights and hotels. /flight or /hotel to begin.",
                  reply_markup=markup)
     
@@ -82,7 +62,7 @@ def ask_origin(message):
     chat_id = message.chat.id
     users[chat_id] = {"flight_info": {}}
     btn_next = types.InlineKeyboardButton(">", callback_data="BUTTON_NEXT")
-    kb1 = generate_inline(countryList[0], 3)
+    kb1 = funcs.generate_inline(countryList[0], 3)
     kb1.add(btn_next)
     bot.send_message(chat_id, "Please select your home country:", reply_markup=kb1)
     
@@ -291,7 +271,7 @@ def get_country_code(callback):
                 PAGE += 1
             elif callback.data == "BUTTON_PREV":
                 PAGE -= 1
-            kb = generate_inline(countryList[PAGE], 3)
+            kb = funcs.generate_inline(countryList[PAGE], 3)
             if PAGE == 0:
                 kb.add(types.InlineKeyboardButton(">", callback_data="BUTTON_NEXT"))
             elif PAGE == 1:

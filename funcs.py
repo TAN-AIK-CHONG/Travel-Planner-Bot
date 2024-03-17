@@ -1,4 +1,26 @@
 from datetime import datetime, timedelta
+from telebot import types
+import pycountry_convert
+
+#function to generate inline buttons (in text)
+#specifially will generate buttons for country code
+def generate_inline(bts_names,width):
+    btn_list =[]
+    for buttons in bts_names:
+        btn_list.append(types.InlineKeyboardButton(buttons, callback_data=pycountry_convert.country_name_to_country_alpha2(buttons, cn_name_format="default")))
+    markup = types.InlineKeyboardMarkup(row_width=width)
+    markup.add(*btn_list)
+    return markup
+
+
+#function to generate keyboard buttons
+def generate_buttons(bts_names,width):
+    btn_list =[]
+    for buttons in bts_names:
+        btn_list.append(types.KeyboardButton(buttons))
+    markup = types.ReplyKeyboardMarkup(row_width=width)
+    markup.add(*btn_list)
+    return markup
 
 def extract_flight_info(flight):
     # Extract necessary information from the flight
@@ -11,17 +33,7 @@ def extract_flight_info(flight):
     airline = flight["airlines"][0]  # Assuming there's only one airline per flight
     route = flight["route"]
 
-    # Extract information about each route segment
-    route_info = []
-    for segment in route:
-        route_info.append({
-            "fly_from": segment["cityFrom"],
-            "fly_to": segment["cityTo"],
-            "departure": datetime.strptime(segment["local_departure"], "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%d-%m-%Y, %H:%M"),
-            "arrival": datetime.strptime(segment["local_arrival"], "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%d-%m-%Y, %H:%M"),
-            "flight_number": segment["flight_no"],
-            "airline": segment["airline"]
-        })
+    
 
     return {
         "deep_link": deep_link,
@@ -31,7 +43,6 @@ def extract_flight_info(flight):
         "local_departure": local_departure,
         "local_arrival": local_arrival,
         "airline": airline,
-        "route_info": route_info
     }
 
 def format_flight_info(info):
@@ -40,14 +51,6 @@ def format_flight_info(info):
     flight_message += f"Departure: {info['local_departure']}, Arrival: {info['local_arrival']}\n"
     flight_message += f"Departure Duration: {info['departure_duration']}h\n"
     flight_message += f"Return Duration: {info['return_duration']}h\n\n"
-        
-    # Add information about all transiting flights
-    flight_message += "Flight Route:\n"
-    for segment in info['route_info']:
-        flight_message += f"Flight {segment['flight_number']} from {segment['fly_from']} to {segment['fly_to']}\n"
-        flight_message += f"Departure: {segment['departure']}, Arrival: {segment['arrival']}\n"
-        flight_message += f"Airline: {segment['airline']}\n\n"
-
 
     flight_message += f"<a href='{info['deep_link']}'>More Details/Book</a>\n\n\n"
 
