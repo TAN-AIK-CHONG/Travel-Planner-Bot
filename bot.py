@@ -55,9 +55,21 @@ def generate_inline(bts_names,width):
     markup.add(*btn_list)
     return markup
 
+#function to help check if user input is command. only used for ask_depart/ ask_return/ ask_date functions
+def util_isCommand(message):
+        command = message.text.split()[0]  # Extract the command
+        if command == '/start':
+            send_welcome(message)
+        elif command == '/flight':
+            ask_origin(message)
+        else:
+            bot.reply_to(message, "Sorry, I didn't understand that command. Please use /flight or /hotel to begin.")
+            send_welcome(message)
 #<-------------------------------------MAIN BODY------------------------------------->#
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
+    chat_id = message.chat.id
+    users[chat_id] = {}
     markup = generate_buttons(['/flight','/hotel'],2)
     bot.reply_to(message, "Hi, I'm ExpeditionExpertBot! I'll help you source cheap flights and hotels. /flight or /hotel to begin.",
                  reply_markup=markup)
@@ -77,81 +89,93 @@ def ask_depart(message):
     bot.register_next_step_handler(message, search_departure_city)
 
 def search_departure_city(message):
-    chat_id = message.chat.id
-    term = message.text
-    locale = "en-US"  # You can change this to the appropriate locale
-    location_types = "airport"  # You can adjust the location types if needed
-    limit = 10  # Number of search results to display
-    active_only = True  # Whether to include only active locations
-
-    # Perform location search
-    search_results = kiwi_location_search(term, locale, location_types, limit, active_only)
-
-    if search_results and search_results['results_retrieved'] > 0:
-        # Create buttons for each search result
-        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        for location in search_results['locations']:
-            button_text = f"{location['name']} ({location['code']})"
-            markup.add(button_text)
-
-        bot.send_message(chat_id, "Please select the departure city:", reply_markup=markup)
-        bot.register_next_step_handler(message, select_departure_city)
+    if (message.text[0] == '/'):
+        util_isCommand(message)
     else:
-        bot.reply_to(message, "No cities found. Please enter departure city again.")
-        bot.register_next_step_handler(message, search_departure_city)
+        chat_id = message.chat.id
+        term = message.text
+        locale = "en-US"  # You can change this to the appropriate locale
+        location_types = "airport"  # You can adjust the location types if needed
+        limit = 10  # Number of search results to display
+        active_only = True  # Whether to include only active locations
+
+        # Perform location search
+        search_results = kiwi_location_search(term, locale, location_types, limit, active_only)
+
+        if search_results and search_results['results_retrieved'] > 0:
+            # Create buttons for each search result
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            for location in search_results['locations']:
+                button_text = f"{location['name']} ({location['code']})"
+                markup.add(button_text)
+
+            bot.send_message(chat_id, "Please select the departure city:", reply_markup=markup)
+            bot.register_next_step_handler(message, select_departure_city)
+        else:
+            bot.reply_to(message, "No cities found. Please enter departure city again.")
+            bot.register_next_step_handler(message, search_departure_city)
 
 def select_departure_city(message):
-    chat_id = message.chat.id
-    selected_city_text = message.text
-    selected_city_name, selected_city_iata = selected_city_text.split(' (')
-    selected_city_iata = selected_city_iata[:-1]  # Remove the closing parenthesis
+    if (message.text[0] == '/'):
+        util_isCommand(message)
+    else:
+        chat_id = message.chat.id
+        selected_city_text = message.text
+        selected_city_name, selected_city_iata = selected_city_text.split(' (')
+        selected_city_iata = selected_city_iata[:-1]  # Remove the closing parenthesis
 
-    # Store selected city and its IATA code in user's flight info
-    users[chat_id]["flight_info"]["fly_from"] = selected_city_name
-    users[chat_id]["flight_info"]["fly_from_iata"] = selected_city_iata
+        # Store selected city and its IATA code in user's flight info
+        users[chat_id]["flight_info"]["fly_from"] = selected_city_name
+        users[chat_id]["flight_info"]["fly_from_iata"] = selected_city_iata
 
-    bot.reply_to(message, f"You've selected {selected_city_name}.")
-    bot.reply_to(message, "Which city does the flight arrive at?")
-    bot.register_next_step_handler(message, search_arrival_city)
+        bot.reply_to(message, f"You've selected {selected_city_name}.")
+        bot.reply_to(message, "Which city does the flight arrive at?")
+        bot.register_next_step_handler(message, search_arrival_city)
     
 def search_arrival_city(message):
-    chat_id = message.chat.id
-    term = message.text
-    locale = "en-US"  # You can change this to the appropriate locale
-    location_types = "airport"  # You can adjust the location types if needed
-    limit = 5  # Number of search results to display
-    active_only = True  # Whether to include only active locations
-
-    # Perform location search
-    search_results = kiwi_location_search(term, locale, location_types, limit, active_only)
-
-    if search_results and search_results['results_retrieved'] > 0:
-        # Create buttons for each search result
-        markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
-        for location in search_results['locations']:
-            button_text = f"{location['name']} ({location['code']})"
-            markup.add(button_text)
-
-        bot.send_message(chat_id, "Please select the arrival city:", reply_markup=markup)
-        bot.register_next_step_handler(message, select_arrival_city)
+    if (message.text[0] == '/'):
+        util_isCommand(message)
     else:
-        bot.reply_to(message, "No cities found. Please enter arrival city again.")
-        bot.register_next_step_handler(message, search_arrival_city)
+        chat_id = message.chat.id
+        term = message.text
+        locale = "en-US"  # You can change this to the appropriate locale
+        location_types = "airport"  # You can adjust the location types if needed
+        limit = 5  # Number of search results to display
+        active_only = True  # Whether to include only active locations
+
+        # Perform location search
+        search_results = kiwi_location_search(term, locale, location_types, limit, active_only)
+
+        if search_results and search_results['results_retrieved'] > 0:
+            # Create buttons for each search result
+            markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
+            for location in search_results['locations']:
+                button_text = f"{location['name']} ({location['code']})"
+                markup.add(button_text)
+
+            bot.send_message(chat_id, "Please select the arrival city:", reply_markup=markup)
+            bot.register_next_step_handler(message, select_arrival_city)
+        else:
+            bot.reply_to(message, "No cities found. Please enter arrival city again.")
+            bot.register_next_step_handler(message, search_arrival_city)
 
 def select_arrival_city(message):
-    chat_id = message.chat.id
-    selected_city_text = message.text
-    selected_city_name, selected_city_iata = selected_city_text.split(' (')
-    selected_city_iata = selected_city_iata[:-1]  # Remove the closing parenthesis
+    if (message.text[0] == '/'):
+        util_isCommand(message)
+    else:
+        chat_id = message.chat.id
+        selected_city_text = message.text
+        selected_city_name, selected_city_iata = selected_city_text.split(' (')
+        selected_city_iata = selected_city_iata[:-1]  # Remove the closing parenthesis
 
-    # Store selected city and its IATA code in user's flight info
-    users[chat_id]["flight_info"]["fly_to"] = selected_city_name
-    users[chat_id]["flight_info"]["fly_to_iata"] = selected_city_iata
+        # Store selected city and its IATA code in user's flight info
+        users[chat_id]["flight_info"]["fly_to"] = selected_city_name
+        users[chat_id]["flight_info"]["fly_to_iata"] = selected_city_iata
 
-    bot.reply_to(message, f"You've selected {selected_city_name}.")
-    markup = telebot.types.ReplyKeyboardRemove()
-    bot.send_message(chat_id, "Please input the departure date in DD.MM.YYYY format. eg. 24.04.2024 is 24 April 2024", reply_markup = markup)
-    bot.register_next_step_handler(message, ask_date)
+        bot.reply_to(message, f"You've selected {selected_city_name}.")
+        markup = telebot.types.ReplyKeyboardRemove()
+        bot.send_message(chat_id, "Please input the departure date in DD.MM.YYYY format. eg. 24.04.2024 is 24 April 2024", reply_markup = markup)
+        bot.register_next_step_handler(message, ask_date)
     
 def ask_date(message):
     chat_id = message.chat.id
@@ -258,9 +282,11 @@ def search_flights(message):
     else:
         bot.send_message(chat_id, "Information not found. Please start a new search.")
 
-        
-@bot.callback_query_handler(func=lambda call:True)
+
+# HANDLES BUTTON PRESSES     
+@bot.callback_query_handler(func=lambda call: True)
 def get_country_code(callback):
+    chat_id = callback.message.chat.id
     if callback.message: 
         if callback.data.startswith("BUTTON_"):
             global PAGE
@@ -281,7 +307,6 @@ def get_country_code(callback):
             
             bot.edit_message_reply_markup(chat_id=callback.message.chat.id, message_id=callback.message.message_id, reply_markup=kb)
         else:
-            chat_id = callback.message.chat.id
             users[chat_id]["flight_info"]["partner_market"] = callback.data
             bot.send_message(chat_id, f"Your selected country code is: {callback.data}")
             ask_depart(callback.message)
@@ -289,9 +314,4 @@ def get_country_code(callback):
     else:
         bot.send_message(chat_id, "An error occured. Please restart.")
 
-
-    
-
-                
-
-bot.infinity_polling()  
+bot.infinity_polling()
