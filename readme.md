@@ -1,5 +1,10 @@
 # ExpeditionExpertBot on Telegram
 
+## Description
+
+ExpeditionExpertBot is a Telegram bot designed to assist users in finding and booking flights. It provides real-time flight search functionality, allowing users to input their travel details and receive a list of best available flights matching their criteria. The bot retrieves flight information from a third-party flight search API and presents the results in a user-friendly format. 
+
+
 ## Link
 
 https://t.me/ExpeditionExpertBot
