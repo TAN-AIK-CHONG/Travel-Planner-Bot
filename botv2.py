@@ -44,14 +44,6 @@ with open("currency2.txt", "r") as file:
 PAGE_country = 0
 PAGE_curr = 0
 
-#function to generate keyboard buttons
-def generate_buttons(bts_names,width):
-    btn_list =[]
-    for buttons in bts_names:
-        btn_list.append(types.KeyboardButton(buttons))
-    markup = types.ReplyKeyboardMarkup(row_width=width)
-    markup.add(*btn_list)
-    return markup
 
 #function to generate inline buttons (in text)
 #specifially will generate buttons for country code
