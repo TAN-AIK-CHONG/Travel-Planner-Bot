@@ -28,3 +28,13 @@
    ```bash
    pip install requests
    ```
+
+
+## APIs used
+
+1. Tequila Search API by Kiwi.com: returns the best flights
+   (https://tequila.kiwi.com/)
+
+
+3. Tequila Locations API by Kiwi.com: returns airport IATA codes of given city
+   (https://tequila.kiwi.com/)
