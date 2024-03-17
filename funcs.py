@@ -69,7 +69,7 @@ def format_flight_info(info, currency):
     flight_message = ""
     flight_message += f"<b>{info['city_from']} ({info['fly_from']}) - {info['city_to']} ({info['fly_to']})</b>\n"
     if info['onward_stops'] < 1:
-        flight_message += "\U0001F504 Direct\n"
+        flight_message += "\U0001F680 Direct\n"
     else:
         flight_message += f"\U0001F504 Stops: {info['onward_stops']}\n"
     flight_message += f"\U0001F6EB Departure: {info['local_departure']}\n"
@@ -78,7 +78,7 @@ def format_flight_info(info, currency):
     if info["return_departure"] is not None and info["return_arrival"] is not None:
         flight_message += f"<b>{info['city_to']} ({info['fly_to']}) - {info['city_from']} ({info['fly_from']})</b>\n"
         if info['return_stops'] < 1:
-            flight_message += "\U0001F504 Direct\n"
+            flight_message += "\U0001F680 Direct\n"
         else:
             flight_message += f"\U0001F504 Stops: {info['return_stops']}\n"
         flight_message += f"\U0001F6EB Departure: {info['return_departure']}\n"
