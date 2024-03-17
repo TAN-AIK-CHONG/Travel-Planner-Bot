@@ -1,7 +1,6 @@
 import os
 from dotenv import load_dotenv
 import telebot
-import requests
 from telebot import types
 from search import kiwi_location_search, kiwi_flight_search
 from datetime import datetime, timedelta
@@ -65,12 +64,14 @@ def util_isCommand(message):
         else:
             bot.reply_to(message, "Sorry, I didn't understand that command. Please use /flight or /hotel to begin.")
             send_welcome(message)
+
+
 #<-------------------------------------MAIN BODY------------------------------------->#
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     chat_id = message.chat.id
     users[chat_id] = {}
-    markup = generate_buttons(['/flight','/hotel'],2)
+    markup = generate_buttons(['/flight','/hotel'],1)
     bot.reply_to(message, "Hi, I'm ExpeditionExpertBot! I'll help you source cheap flights and hotels. /flight or /hotel to begin.",
                  reply_markup=markup)
     
@@ -184,6 +185,7 @@ def ask_date(message):
     if (message.text[0] == '/'):
         util_isCommand(message)
         return
+    print("ask date:", message.text)
     chat_id = message.chat.id
     date_format = "%d.%m.%Y"  # Date format to expect
     try:
@@ -196,12 +198,14 @@ def ask_date(message):
     except ValueError:
         # If the received message is not in the expected date format, ask again
         bot.reply_to(message, "Error! Please input the departure date in DD.MM.YYYY format. eg. 24.04.2024 is 24 April 2024")
+        print("message error input:", message.text)
         bot.register_next_step_handler(message, ask_date)
     
 def ask_return(message):
     if (message.text[0] == '/'):
         util_isCommand(message)
         return
+    print("ask date:", message.text)
     chat_id = message.chat.id
     date_format = "%d.%m.%Y"  # Date format to expect
     try:
@@ -210,31 +214,27 @@ def ask_return(message):
         # If successful, proceed to confirmation
         users[chat_id]["flight_info"]["return_from"] = message.text
         flight_info = users[chat_id]["flight_info"]
-        bot.reply_to(message, f"Confirm your details?\nHome Country: {flight_info['partner_market']}\nDeparture City: {flight_info['fly_from']}\nArrival City: {flight_info['fly_to']}\nFlight date: {flight_info['date_from']}\nReturn Date: {flight_info['return_from']}\nEnter 'confirm' to confirm.")
+        bot.reply_to(message, f"Confirm your details?\nHome Country: {flight_info['partner_market']}\nDeparture City: {flight_info['fly_from']}\nArrival City: {flight_info['fly_to']}\nFlight date: {flight_info['date_from']}\nReturn Date: {flight_info['return_from']}\nEnter 'confirm' to confirm, or any other input to restart")
         bot.register_next_step_handler(message, confirmation)
     except ValueError:
         # If the received message is not in the expected date format, ask again
         bot.reply_to(message, "Error! Please input the return date in DD.MM.YYYY format. eg. 24.04.2024 is 24 April 2024")
+        print("message error input:", message.text)
         bot.register_next_step_handler(message, ask_return)
 
 def confirmation(message):
     if (message.text[0] == '/'):
         util_isCommand(message)
         return
+    print("confirmation message:", message.text)
     chat_id = message.chat.id
     confirmation_text = message.text.lower()
-    flight_info = users[chat_id]["flight_info"]
 
     if confirmation_text == 'confirm':
-        confirmation_message = f"Your flight details have been confirmed:\n\n"
-        confirmation_message += f"Home Country: {flight_info['partner_market']}\n"
-        confirmation_message += f"Departure City: {flight_info['fly_from']}\n"
-        confirmation_message += f"Arrival City: {flight_info['fly_to']}\n"
-        confirmation_message += f"Flight date: {flight_info['date_from']}\n"
-        confirmation_message += f"Return Date: {flight_info['return_from']}\n"
-        confirmation_message += "\nThank you for confirming!"
-        bot.send_message(chat_id, confirmation_message)
-        bot.register_next_step_handler(message, search_flights)
+        bot.send_message(chat_id, "Your flight details have been confirmed.\n" + '\U0001F50D' +"Searching for best flights...")
+        search_flights(message)
+    else:
+        send_welcome(message)
 
 def search_flights(message):
     chat_id = message.chat.id
