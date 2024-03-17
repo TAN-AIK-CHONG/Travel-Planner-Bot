@@ -121,11 +121,13 @@ def get_currency(callback):
     check_type(callback.message)
     
 def flight_type(callback):
+    chat_id = callback.message.chat.id
     if callback.data == "TYPE_oneway":
-        one_way(callback.message)
-    else:
-        #function to handle return
-        pass
+        users[chat_id]["flight_info"]["return_state"] = 0
+        flight(callback.message)
+    elif callback.data == "TYPE_return":
+        users[chat_id]["flight_info"]["return_state"] = 1
+        flight(callback.message)
 
 #<-------------------------------------MAIN BODY------------------------------------->#
 @bot.message_handler(commands=['start','settings'])
@@ -163,7 +165,7 @@ def check_type(message):
     kb.add(btn1,btn2)
     bot.send_message(chat_id, f"Hi, {message.from_user.first_name}! \U0001F44B \n Let's get started. Choose a type of flight.", reply_markup=kb)
     
-def one_way(message):
+def flight(message):
     chat_id = message.chat.id
     bot.send_message(chat_id, "Which city is the flight departing from?")
     bot.register_next_step_handler(message, search_departure_city)
@@ -272,14 +274,21 @@ def ask_date(message):
         date = datetime.strptime(message.text, date_format).date()
         # If successful, proceed to the next step
         users[chat_id]["flight_info"]["date_from"] = message.text
-        bot.reply_to(message, "When is the return flight? (Enter the date in DD.MM.YYYY)")
-        bot.register_next_step_handler(message, ask_return)
+        if users[chat_id]["flight_info"]["return_state"] == 0:
+            users[chat_id]["flight_info"]["return_from"] = None
+            flight_info = users[chat_id]["flight_info"]
+            bot.reply_to(message, f"Confirm your details?\nHome Country: {flight_info['partner_market']}\nDeparture City: {flight_info['fly_from']}\nArrival City: {flight_info['fly_to']}\nFlight date: {flight_info['date_from']}\nReturn Date: {flight_info['return_from']}\nEnter 'confirm' to confirm, or any other input to restart")
+            bot.register_next_step_handler(message, confirmation)
+        else:
+            bot.reply_to(message, "When is the return flight? (Enter the date in DD.MM.YYYY)")
+            bot.register_next_step_handler(message, ask_return)
     except ValueError:
         # If the received message is not in the expected date format, ask again
         bot.reply_to(message, "Error! Please input the departure date in DD.MM.YYYY format. eg. 24.04.2024 is 24 April 2024")
         print("message error input:", message.text)
         bot.register_next_step_handler(message, ask_date)
-    
+  
+#ONLY IF RETURN FLIGHT, THEN EXECUTE  
 def ask_return(message):
     if (message.text[0] == '/'):
         util_isCommand(message)
@@ -330,9 +339,13 @@ def search_flights(message):
 
         # Convert date format from DD.MM.YYYY to DD/MM/YYYY and subtract 1 day
         date_from = (datetime.strptime(date_from_init, "%d.%m.%Y") - timedelta(days=1)).strftime("%d/%m/%Y")
-        return_from = (datetime.strptime(return_from_init, "%d.%m.%Y") - timedelta(days=1)).strftime("%d/%m/%Y")
         date_to = (datetime.strptime(date_from_init, "%d.%m.%Y") + timedelta(days=1)).strftime("%d/%m/%Y")
-        return_to = (datetime.strptime(return_from_init, "%d.%m.%Y") + timedelta(days=1)).strftime("%d/%m/%Y")
+        if return_from_init is None:
+            return_to = None
+            return_from = None
+        else:
+            return_to = (datetime.strptime(return_from_init, "%d.%m.%Y") + timedelta(days=1)).strftime("%d/%m/%Y")
+            return_from = (datetime.strptime(return_from_init, "%d.%m.%Y") - timedelta(days=1)).strftime("%d/%m/%Y")
 
         # Perform flight search using the extracted information
         flight_search_results = kiwi_flight_search(fly_from, fly_to, date_from, date_to, return_from, return_to, partner_market, currency)
