@@ -64,7 +64,7 @@ def extract_flight_info(flight):
         "airline": airline,
     }
 
-def format_flight_info(info):
+def format_flight_info(info, currency):
     flight_message = ""
     flight_message += f"<b>{info['city_from']} ({info['fly_from']}) - {info['city_to']} ({info['fly_to']})</b>\n"
     if info['onward_stops'] < 1:
@@ -80,7 +80,7 @@ def format_flight_info(info):
         flight_message += f"\U0001F504 Stops: {info['return_stops']}\n"
     flight_message += f"\U0001F6EB Departure: {info['return_departure']}\n"
     flight_message += f"\U0001F6EC Arrival: {info['return_arrival']}\n\n"
-    flight_message += f"Price: EUR {info['price']}, Airline: {info['airline']}\n"
+    flight_message += f"Price: {currency} {info['price']}, Airline: {info['airline']}\n"
     flight_message += f"\U0001F517 <a href='{info['deep_link']}'>More Details/Book</a>\n"
     flight_message += "_____________________________\n\n"
 

@@ -321,6 +321,7 @@ def search_flights(message):
 
     if flight_info:
         # Extract necessary information for flight search
+        currency = flight_info.get("curr")
         partner_market = flight_info.get("partner_market")
         fly_from = flight_info.get("fly_from_iata")
         fly_to = flight_info.get("fly_to_iata")
@@ -334,12 +335,13 @@ def search_flights(message):
         return_to = (datetime.strptime(return_from_init, "%d.%m.%Y") + timedelta(days=1)).strftime("%d/%m/%Y")
 
         # Perform flight search using the extracted information
-        flight_search_results = kiwi_flight_search(fly_from, fly_to, date_from, date_to, return_from, return_to, partner_market)
+        flight_search_results = kiwi_flight_search(fly_from, fly_to, date_from, date_to, return_from, return_to, partner_market, currency)
 
         
         ##to be edited!!
         if flight_search_results:
             flights_info = []
+            dispcurrency = flight_search_results["currency"]
             flight_search_results = flight_search_results.get("data", [])
             flight_search_results = flight_search_results[:5]
             for flight in flight_search_results:
@@ -349,7 +351,7 @@ def search_flights(message):
             # Format the flight information for sending
             flight_message = "Here are some available flights:\n\n"
             for info in flights_info:
-                flight_message += funcs.format_flight_info(info)
+                flight_message += funcs.format_flight_info(info, dispcurrency)
 
             bot.send_message(chat_id, flight_message, parse_mode='HTML')
         else:
