@@ -3,10 +3,11 @@ import requests
 from dotenv import load_dotenv
 import urllib.parse
 
+
 ## Returns list of possible IATA based on city name inputted
 def kiwi_location_search(term, locale, location_types, limit, active_only):
-    load_dotenv('.env')
-    KIWI_KEY = os.getenv('KIWI_KEY')
+    load_dotenv(".env")
+    KIWI_KEY = os.getenv("KIWI_KEY")
     endpoint = "https://tequila-api.kiwi.com/locations/query"
 
     params = {
@@ -14,12 +15,10 @@ def kiwi_location_search(term, locale, location_types, limit, active_only):
         "locale": locale,
         "location_types": location_types,
         "limit": limit,
-        "active_only": active_only
+        "active_only": active_only,
     }
 
-    headers = {
-        "apikey": KIWI_KEY
-    }
+    headers = {"apikey": KIWI_KEY}
 
     try:
         response = requests.get(endpoint, params=params, headers=headers)
@@ -31,14 +30,18 @@ def kiwi_location_search(term, locale, location_types, limit, active_only):
         return None  # Return None if there's an error
 
 
-
-
-
-
-
-def kiwi_flight_search(origin, destination, date_from, date_to, return_from, return_to, partner_market, currency):
-    load_dotenv('.env')
-    KIWI_KEY = os.getenv('KIWI_KEY') 
+def kiwi_flight_search(
+    origin,
+    destination,
+    date_from,
+    date_to,
+    return_from,
+    return_to,
+    partner_market,
+    currency,
+):
+    load_dotenv(".env")
+    KIWI_KEY = os.getenv("KIWI_KEY")
     endpoint = "https://tequila-api.kiwi.com/v2/search"
 
     params = {
@@ -49,12 +52,10 @@ def kiwi_flight_search(origin, destination, date_from, date_to, return_from, ret
         "return_from": return_from,
         "return_to": return_to,
         "partner_market": partner_market,
-        "curr": currency
+        "curr": currency,
     }
 
-    headers = {
-        "apikey": KIWI_KEY
-    }
+    headers = {"apikey": KIWI_KEY}
 
     try:
         response = requests.get(endpoint, params=params, headers=headers)

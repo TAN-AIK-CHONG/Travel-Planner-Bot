@@ -2,25 +2,34 @@ from datetime import datetime, timedelta
 from telebot import types
 import pycountry_convert
 
-#function to generate inline buttons (in text)
-#specifially will generate buttons for country code
-def generate_inline(bts_names,width):
-    btn_list =[]
+
+# function to generate inline buttons (in text)
+# specifially will generate buttons for country code
+def generate_inline(bts_names, width):
+    btn_list = []
     for buttons in bts_names:
-        btn_list.append(types.InlineKeyboardButton(buttons, callback_data=pycountry_convert.country_name_to_country_alpha2(buttons, cn_name_format="default")))
+        btn_list.append(
+            types.InlineKeyboardButton(
+                buttons,
+                callback_data=pycountry_convert.country_name_to_country_alpha2(
+                    buttons, cn_name_format="default"
+                ),
+            )
+        )
     markup = types.InlineKeyboardMarkup(row_width=width)
     markup.add(*btn_list)
     return markup
 
 
-#function to generate keyboard buttons
-def generate_buttons(bts_names,width):
-    btn_list =[]
+# function to generate keyboard buttons
+def generate_buttons(bts_names, width):
+    btn_list = []
     for buttons in bts_names:
         btn_list.append(types.KeyboardButton(buttons))
     markup = types.ReplyKeyboardMarkup(row_width=width)
     markup.add(*btn_list)
     return markup
+
 
 def extract_flight_info(flight):
     # Extract necessary information from the flight
@@ -30,8 +39,12 @@ def extract_flight_info(flight):
     city_to = flight["cityTo"]
     deep_link = flight["deep_link"]
     price = flight["price"]
-    local_departure = datetime.strptime(flight["local_departure"], "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%d-%m-%Y, %H:%M")
-    local_arrival = datetime.strptime(flight["local_arrival"], "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%d-%m-%Y, %H:%M")
+    local_departure = datetime.strptime(
+        flight["local_departure"], "%Y-%m-%dT%H:%M:%S.%fZ"
+    ).strftime("%d-%m-%Y, %H:%M")
+    local_arrival = datetime.strptime(
+        flight["local_arrival"], "%Y-%m-%dT%H:%M:%S.%fZ"
+    ).strftime("%d-%m-%Y, %H:%M")
     airlines = flight["airlines"]
     route = flight["route"]
     return_departure = None
@@ -44,9 +57,13 @@ def extract_flight_info(flight):
                 onward_stops += 1
         elif segment["return"] == 1:
             if return_departure is None:
-                return_departure = datetime.strptime(segment["local_departure"], "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%d-%m-%Y, %H:%M")
-            return_arrival = datetime.strptime(segment["local_arrival"], "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%d-%m-%Y, %H:%M")
-            if segment["flyFrom"] != fly_from or segment['flyTo'] != fly_to:
+                return_departure = datetime.strptime(
+                    segment["local_departure"], "%Y-%m-%dT%H:%M:%S.%fZ"
+                ).strftime("%d-%m-%Y, %H:%M")
+            return_arrival = datetime.strptime(
+                segment["local_arrival"], "%Y-%m-%dT%H:%M:%S.%fZ"
+            ).strftime("%d-%m-%Y, %H:%M")
+            if segment["flyFrom"] != fly_from or segment["flyTo"] != fly_to:
                 return_stops += 1
 
     return {
@@ -65,10 +82,11 @@ def extract_flight_info(flight):
         "airlines": airlines,
     }
 
+
 def format_flight_info(info, currency):
     flight_message = ""
     flight_message += f"<b>{info['city_from']} ({info['fly_from']}) - {info['city_to']} ({info['fly_to']})</b>\n"
-    if info['onward_stops'] < 1:
+    if info["onward_stops"] < 1:
         flight_message += "\U0001F680 Direct\n"
     else:
         flight_message += f"\U0001F504 Stops: {info['onward_stops']}\n"
@@ -77,7 +95,7 @@ def format_flight_info(info, currency):
     ## Print the following if there is a return flight
     if info["return_departure"] is not None and info["return_arrival"] is not None:
         flight_message += f"<b>{info['city_to']} ({info['fly_to']}) - {info['city_from']} ({info['fly_from']})</b>\n"
-        if info['return_stops'] < 1:
+        if info["return_stops"] < 1:
             flight_message += "\U0001F680 Direct\n"
         else:
             flight_message += f"\U0001F504 Stops: {info['return_stops']}\n"
@@ -85,11 +103,13 @@ def format_flight_info(info, currency):
         flight_message += f"\U0001F6EC Arrival: {info['return_arrival']}\n\n"
     flight_message += f"Price: {currency} {info['price']}, "
     flight_message += "Airlines: "
-    for airline in info['airlines']:
+    for airline in info["airlines"]:
         flight_message += f"{airline}, "
     flight_message = flight_message[:-2]  # Remove the last comma and space
     flight_message += "\n"
-    flight_message += f"\U0001F517 <a href='{info['deep_link']}'>More Details/Book</a>\n"
+    flight_message += (
+        f"\U0001F517 <a href='{info['deep_link']}'>More Details/Book</a>\n"
+    )
     flight_message += "_____________________________\n\n"
 
     return flight_message
