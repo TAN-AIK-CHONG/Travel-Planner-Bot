@@ -1,5 +1,10 @@
 # ExpeditionExpertBot on Telegram
 
+## Link
+
+https://t.me/ExpeditionExpertBot
+
+
 ## Libraries Used
 
 1. Dotenv:  Reads api keys from .env file.
@@ -38,3 +43,8 @@
 
 3. Tequila Locations API by Kiwi.com: returns airport IATA codes of given city
    (https://tequila.kiwi.com/)
+
+
+## Hosting
+
+We hosted our Telegram Bot on PythonAnywhere. (https://www.pythonanywhere.com/)
