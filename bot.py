@@ -250,15 +250,16 @@ def search_flights(message):
         if flight_search_results:
             flights_info = []
             flight_search_results = flight_search_results.get("data", [])
-            flight_search_results = flight_search_results[:3]
+            flight_search_results = flight_search_results[:5]
             for flight in flight_search_results:
                 deep_link = flight["deep_link"]
                 price = flight["price"]
-                local_departure = flight["local_departure"]
-                local_arrival = flight["local_arrival"]
+                local_departure = datetime.strptime(flight["local_departure"], "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%d-%m-%Y, %H:%M")
+                local_arrival = datetime.strptime(flight["local_arrival"], "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%d-%m-%Y, %H:%M")
                 airline = flight["airlines"][0]  # Assuming there's only one airline per flight
                 flight_number = flight["route"][0]["flight_no"]  # Taking the first flight number
 
+               
                 # Append extracted information to flights_info list
                 flights_info.append({
                     "deep_link": deep_link,
@@ -272,11 +273,12 @@ def search_flights(message):
             # Format the flight information for sending
             flight_message = "Here are some available flights:\n\n"
             for info in flights_info:
-                flight_message += f"Price: {info['price']}, Airline: {info['airline']}, Flight Number: {info['flight_number']}\n"
+                flight_message += f"Price: EUR {info['price']}, Airline: {info['airline']}, Flight Number: {info['flight_number']}\n"
                 flight_message += f"Departure: {info['local_departure']}, Arrival: {info['local_arrival']}\n"
-                flight_message += f"Deep Link: {info['deep_link']}\n\n"
+                flight_message += f"<a href='{info['deep_link']}'>More Details/Book</a>\n\n"
 
-            bot.send_message(chat_id, flight_message)
+
+            bot.send_message(chat_id, flight_message, parse_mode='HTML')
         else:
             bot.send_message(chat_id, "No flights found for the given criteria.")
     else:

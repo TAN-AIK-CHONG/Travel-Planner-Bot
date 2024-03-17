@@ -1,6 +1,7 @@
 import os
 import requests
 from dotenv import load_dotenv
+import urllib.parse
 
 ## Returns list of possible IATA based on city name inputted
 def kiwi_location_search(term, locale, location_types, limit, active_only):
@@ -20,15 +21,14 @@ def kiwi_location_search(term, locale, location_types, limit, active_only):
         "apikey": KIWI_KEY
     }
 
-    response = requests.get(endpoint, params=params, headers=headers)
-
-    if response.status_code == 200:
-        return response.json()
-    elif response.status_code == 400:
-        return None  # error
-    else:
-        # error, any other status codes
-        return None
+    try:
+        response = requests.get(endpoint, params=params, headers=headers)
+        response.raise_for_status()  # Raise an exception for HTTP errors
+        data = response.json()
+        return data  # Return the JSON response
+    except requests.exceptions.RequestException as e:
+        print("Error:", e)
+        return None  # Return None if there's an error
 
 
 
@@ -55,11 +55,12 @@ def kiwi_flight_search(origin, destination, date_from, date_to, return_from, ret
         "apikey": KIWI_KEY
     }
 
-    response = requests.get(endpoint, params=params, headers=headers)
+    try:
+        response = requests.get(endpoint, params=params, headers=headers)
+        response.raise_for_status()  # Raise an exception for 4XX and 5XX status codes
 
-    if response.status_code == 200:
-        return response.json()
-    elif response.status_code == 400:
-        return None #error
-    else:
-        return None #error, any other status codes
+        data = response.json()
+        return data  # This will contain flight search results
+    except requests.exceptions.RequestException as e:
+        print("Error:", e)
+        return None
