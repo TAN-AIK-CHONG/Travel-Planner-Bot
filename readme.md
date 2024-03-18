@@ -52,4 +52,4 @@ https://t.me/ExpeditionExpertBot
 
 ## Hosting
 
-We hosted our Telegram Bot on PythonAnywhere. (https://www.pythonanywhere.com/)
+We hosted our Telegram Bot on PythonAnywhere by Anaconda. (https://www.pythonanywhere.com/)
