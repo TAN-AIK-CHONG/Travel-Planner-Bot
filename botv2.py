@@ -6,6 +6,7 @@ from search import kiwi_location_search, kiwi_flight_search
 from datetime import datetime, timedelta
 import pycountry_convert
 import funcs
+import json
 
 # get bot token from env file (security practice)
 load_dotenv(".env")
@@ -39,6 +40,9 @@ with open("currency2.txt", "r") as file:
     for row in file:
         currencyList[1].append(row.rstrip())
 
+#currency flag file for flag emojis
+with open('flags.json', 'r') as file:
+    currency_flags = json.load(file)
 
 # Initialise pages for InlineKBs
 PAGE_country = 0
@@ -50,6 +54,15 @@ def generate_inline(bts_names, width):
     btn_list = []
     for buttons in bts_names:
         btn_list.append(types.InlineKeyboardButton(buttons, callback_data=buttons))
+    markup = types.InlineKeyboardMarkup(row_width=width)
+    markup.add(*btn_list)
+    return markup
+
+def generate_currencies(bts_names, width):
+    btn_list = []
+    for buttons in bts_names:
+        emoji = currency_flags[buttons]
+        btn_list.append(types.InlineKeyboardButton(f"{emoji} {buttons}", callback_data=buttons))
     markup = types.InlineKeyboardMarkup(row_width=width)
     markup.add(*btn_list)
     return markup
@@ -100,7 +113,7 @@ def curr_prev_next(callback):
         PAGE_curr += 1
     elif callback.data == "curr_BUTTON_PREV":
         PAGE_curr -= 1
-    kb = generate_inline(currencyList[PAGE_curr], 4)
+    kb = generate_currencies(currencyList[PAGE_curr], 4)
     if PAGE_curr == 0:
         kb.add(types.InlineKeyboardButton(">", callback_data="curr_BUTTON_NEXT"))
     elif PAGE_country == 1:
@@ -167,7 +180,7 @@ def currency_select(message):
     chat_id = message.chat.id
     global PAGE_curr
     PAGE_curr = 0
-    kb = generate_inline(currencyList[0], 4)
+    kb = generate_currencies(currencyList[0], 4)
     btn_next = types.InlineKeyboardButton(">", callback_data="curr_BUTTON_NEXT")
     kb.add(btn_next)
     bot.send_message(chat_id, "Please choose your preferred currency \U0001F4B5", reply_markup=kb)
@@ -215,6 +228,7 @@ def search_departure_city(message):
         for location in search_results["locations"]:
             button_text = f"{location['name']} ({location['code']})"
             markup.add(button_text)
+        markup.add(types.ReplyKeyboardMarkup("Restart"))
 
         bot.send_message(
             chat_id, "Please choose a city from the list \U0001F447", reply_markup=markup
