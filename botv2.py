@@ -169,7 +169,7 @@ def currency_select(message):
     kb = generate_inline(currencyList[0], 4)
     btn_next = types.InlineKeyboardButton(">", callback_data="curr_BUTTON_NEXT")
     kb.add(btn_next)
-    bot.send_message(chat_id, "Please choose your preferred currency", reply_markup=kb)
+    bot.send_message(chat_id, "Please choose your preferred currency \U0001F4B5", reply_markup=kb)
 
 
 @bot.message_handler(commands=["flights"])
