@@ -87,9 +87,15 @@ def util_isCommand(message):
 def ctr_prev_next(callback):
     chat_id = callback.message.chat.id
     if callback.data == "ctr_BUTTON_NEXT":
-        users[chat_id]["page_info"]["PAGE_country"] += 1
+        if users[chat_id]["page_info"]["PAGE_country"] <2:
+            users[chat_id]["page_info"]["PAGE_country"] += 1
+        else:
+            return
     elif callback.data == "ctr_BUTTON_PREV":
-        users[chat_id]["page_info"]["PAGE_country"] -= 1
+        if users[chat_id]["page_info"]["PAGE_country"] >0:
+            users[chat_id]["page_info"]["PAGE_country"] -= 1
+        else:
+            return
     kb = generate_inline(countryList[users[chat_id]["page_info"]["PAGE_country"]], 3)
     if users[chat_id]["page_info"]["PAGE_country"] == 0:
         kb.add(types.InlineKeyboardButton(">", callback_data="ctr_BUTTON_NEXT"))
@@ -109,9 +115,15 @@ def ctr_prev_next(callback):
 def curr_prev_next(callback):
     chat_id = callback.message.chat.id
     if callback.data == "curr_BUTTON_NEXT":
-        users[chat_id]["page_info"]["PAGE_curr"] += 1
+        if users[chat_id]["page_info"]["PAGE_curr"] < 1:
+            users[chat_id]["page_info"]["PAGE_curr"] += 1
+        else:
+            return
     elif callback.data == "curr_BUTTON_PREV":
-        users[chat_id]["page_info"]["PAGE_curr"] -= 1
+        if users[chat_id]["page_info"]["PAGE_curr"] >0:
+            users[chat_id]["page_info"]["PAGE_curr"] -= 1
+        else:
+            return
     kb = generate_currencies(currencyList[users[chat_id]["page_info"]["PAGE_curr"]], 4)
     if users[chat_id]["page_info"]["PAGE_curr"] == 0:
         kb.add(types.InlineKeyboardButton(">", callback_data="curr_BUTTON_NEXT"))
