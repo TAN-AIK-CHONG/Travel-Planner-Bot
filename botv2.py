@@ -45,8 +45,7 @@ PAGE_country = 0
 PAGE_curr = 0
 
 
-# function to generate inline buttons (in text)
-# specifially will generate buttons for country code
+# function to generate inline buttons (in message)
 def generate_inline(bts_names, width):
     btn_list = []
     for buttons in bts_names:
@@ -66,7 +65,7 @@ def util_isCommand(message):
     else:
         bot.reply_to(
             message,
-            "Sorry, I didn't understand that command. Please use /flight or /hotel to begin.",
+            "Sorry, I didn't understand that command. Please use /settings or /flights to begin",
         )
         send_welcome(message)
 
