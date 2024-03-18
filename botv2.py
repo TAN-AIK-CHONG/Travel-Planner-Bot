@@ -145,6 +145,7 @@ def send_welcome(message):
     chat_id = message.chat.id
     users[chat_id] = {}
     users[chat_id] = {"flight_info": {}}
+    users[chat_id]
     bot.reply_to(
         message,
         "Hi, I'm ExpeditionExpertBot! I'll help you source cheap flights! Let's get started with your settings",
@@ -181,7 +182,7 @@ def check_type(message):
     kb.add(btn1, btn2)
     bot.send_message(
         chat_id,
-        f"Hi, {message.from_user.first_name}! \U0001F44B \n Let's get started. Choose a type of flight.",
+        f"Hi, {message.chat.username}! \U0001F44B \n Let's get started. Choose a type of flight.",
         reply_markup=kb,
     )
 
@@ -271,7 +272,7 @@ def search_arrival_city(message):
             chat_id, "Please choose a city from the list \U0001F447", reply_markup=markup
         )
         bot.register_next_step_handler(message, select_arrival_city)
-    else:
+    else:   
         bot.reply_to(message, "No cities found. Please enter arrival city again.")
         bot.register_next_step_handler(message, search_arrival_city)
 
