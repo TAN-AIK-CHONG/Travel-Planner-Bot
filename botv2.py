@@ -216,7 +216,7 @@ def search_departure_city(message):
             markup.add(button_text)
 
         bot.send_message(
-            chat_id, "Please select the departure city:", reply_markup=markup
+            chat_id, "Please choose a city from the list \U0001F447", reply_markup=markup
         )
         bot.register_next_step_handler(message, select_departure_city)
     else:
@@ -268,7 +268,7 @@ def search_arrival_city(message):
             markup.add(button_text)
 
         bot.send_message(
-            chat_id, "Please select the arrival city:", reply_markup=markup
+            chat_id, "Please choose a city from the list \U0001F447", reply_markup=markup
         )
         bot.register_next_step_handler(message, select_arrival_city)
     else:
@@ -376,8 +376,7 @@ def confirmation(message):
         bot.send_message(
             chat_id,
             "Your flight details have been confirmed.\n"
-            + "\U0001F50D"
-            + "Searching for best flights...",
+            + "\U0001F50D Searching for best flights...",
         )
         search_flights(message)
     else:
