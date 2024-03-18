@@ -202,7 +202,7 @@ def check_type(message):
 
 def flight(message):
     chat_id = message.chat.id
-    bot.send_message(chat_id, "Which city is the flight departing from?")
+    bot.send_message(chat_id, "Which city are you departing from?")
     bot.register_next_step_handler(message, search_departure_city)
 
 
@@ -228,10 +228,11 @@ def search_departure_city(message):
         for location in search_results["locations"]:
             button_text = f"{location['name']} ({location['code']})"
             markup.add(button_text)
-        markup.add(types.ReplyKeyboardMarkup("Restart"))
+
+        markup.add("Search again \U0001F50D")
 
         bot.send_message(
-            chat_id, "Please choose a city from the list \U0001F447", reply_markup=markup
+            chat_id, "Please select the departure city from the list below: \U00002B07", reply_markup=markup
         )
         bot.register_next_step_handler(message, select_departure_city)
     else:
@@ -243,7 +244,10 @@ def select_departure_city(message):
     if message.text[0] == "/":
         util_isCommand(message)
         return
-
+    elif message.text == "Search again \U0001F50D":
+        bot.reply_to(message, "Please enter a departure city.")
+        bot.register_next_step_handler(message, search_departure_city)
+        return
     chat_id = message.chat.id
     selected_city_text = message.text
     selected_city_name, selected_city_iata = selected_city_text.split(" (")
@@ -254,7 +258,7 @@ def select_departure_city(message):
     users[chat_id]["flight_info"]["fly_from_iata"] = selected_city_iata
 
     bot.reply_to(message, f"You've selected {selected_city_name}.")
-    bot.reply_to(message, "Which city does the flight arrive at?")
+    bot.reply_to(message, "Which city are you arriving at?")
     bot.register_next_step_handler(message, search_arrival_city)
 
 
@@ -262,7 +266,6 @@ def search_arrival_city(message):
     if message.text[0] == "/":
         util_isCommand(message)
         return
-
     chat_id = message.chat.id
     term = message.text
     locale = "en-US"  # You can change this to the appropriate locale
@@ -282,8 +285,10 @@ def search_arrival_city(message):
             button_text = f"{location['name']} ({location['code']})"
             markup.add(button_text)
 
+        markup.add("Search again \U0001F50D")
+
         bot.send_message(
-            chat_id, "Please choose a city from the list \U0001F447", reply_markup=markup
+            chat_id, "Please select the arrival city from the list below: \U00002B07", reply_markup=markup
         )
         bot.register_next_step_handler(message, select_arrival_city)
     else:   
@@ -295,7 +300,10 @@ def select_arrival_city(message):
     if message.text[0] == "/":
         util_isCommand(message)
         return
-
+    elif message.text == "Search again \U0001F50D":
+        bot.reply_to(message, "Please enter an arrival city.")
+        bot.register_next_step_handler(message, search_departure_city)
+        return
     chat_id = message.chat.id
     selected_city_text = message.text
     selected_city_name, selected_city_iata = selected_city_text.split(" (")
