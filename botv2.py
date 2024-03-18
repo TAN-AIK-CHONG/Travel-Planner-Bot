@@ -245,7 +245,8 @@ def select_departure_city(message):
         util_isCommand(message)
         return
     elif message.text == "Search again \U0001F50D":
-        bot.reply_to(message, "Please enter a departure city.")
+        hide_markup = types.ReplyKeyboardRemove()
+        bot.reply_to(message, "Please enter a departure city.", reply_markup=hide_markup)
         bot.register_next_step_handler(message, search_departure_city)
         return
     chat_id = message.chat.id
@@ -258,7 +259,8 @@ def select_departure_city(message):
     users[chat_id]["flight_info"]["fly_from_iata"] = selected_city_iata
 
     bot.reply_to(message, f"You've selected {selected_city_name}.")
-    bot.reply_to(message, "Which city are you arriving at?")
+    hide_markup = types.ReplyKeyboardRemove()
+    bot.reply_to(message, "Which city are you arriving at?", reply_markup=hide_markup)
     bot.register_next_step_handler(message, search_arrival_city)
 
 
@@ -301,8 +303,9 @@ def select_arrival_city(message):
         util_isCommand(message)
         return
     elif message.text == "Search again \U0001F50D":
-        bot.reply_to(message, "Please enter an arrival city.")
-        bot.register_next_step_handler(message, search_departure_city)
+        hide_markup = hide_markup = types.ReplyKeyboardRemove()
+        bot.reply_to(message, "Please enter an arrival city.", reply_markup=hide_markup)
+        bot.register_next_step_handler(message, search_arrival_city)
         return
     chat_id = message.chat.id
     selected_city_text = message.text
