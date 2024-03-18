@@ -116,9 +116,8 @@ def curr_prev_next(callback):
     kb = generate_currencies(currencyList[PAGE_curr], 4)
     if PAGE_curr == 0:
         kb.add(types.InlineKeyboardButton(">", callback_data="curr_BUTTON_NEXT"))
-    elif PAGE_country == 1:
-        btn_prev = types.InlineKeyboardButton("<", callback_data="curr_BUTTON_PREV")
-        kb.add(btn_prev)
+    elif PAGE_curr == 1:
+        kb.add(types.InlineKeyboardButton("<", callback_data="curr_BUTTON_PREV"))
     bot.edit_message_reply_markup(
         chat_id=callback.message.chat.id,
         message_id=callback.message.message_id,
