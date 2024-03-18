@@ -85,21 +85,20 @@ def util_isCommand(message):
 
 # -----------------------------BUTTON HANDLING FUNCTIONS-----------------------------#
 def ctr_prev_next(callback):
-    global PAGE_country
+    chat_id = callback.message.chat.id
     if callback.data == "ctr_BUTTON_NEXT":
-        PAGE_country += 1
+        users[chat_id]["page_info"]["PAGE_country"] += 1
     elif callback.data == "ctr_BUTTON_PREV":
-        PAGE_country -= 1
-    kb = generate_inline(countryList[PAGE_country], 3)
-    if PAGE_country == 0:
+        users[chat_id]["page_info"]["PAGE_country"] -= 1
+    kb = generate_inline(countryList[users[chat_id]["page_info"]["PAGE_country"]], 3)
+    if users[chat_id]["page_info"]["PAGE_country"] == 0:
         kb.add(types.InlineKeyboardButton(">", callback_data="ctr_BUTTON_NEXT"))
-    elif PAGE_country == 1:
+    elif users[chat_id]["page_info"]["PAGE_country"] == 1:
         btn_next = types.InlineKeyboardButton(">", callback_data="ctr_BUTTON_NEXT")
         btn_prev = types.InlineKeyboardButton("<", callback_data="ctr_BUTTON_PREV")
         kb.add(btn_prev, btn_next)
-    elif PAGE_country == 2:
-        btn_prev = types.InlineKeyboardButton("<", callback_data="ctr_BUTTON_PREV")
-        kb.add(btn_prev)
+    elif users[chat_id]["page_info"]["PAGE_country"] == 2:
+        kb.add(types.InlineKeyboardButton("<", callback_data="ctr_BUTTON_PREV"))
     bot.edit_message_reply_markup(
         chat_id=callback.message.chat.id,
         message_id=callback.message.message_id,
@@ -108,15 +107,15 @@ def ctr_prev_next(callback):
 
 
 def curr_prev_next(callback):
-    global PAGE_curr
+    chat_id = callback.message.chat.id
     if callback.data == "curr_BUTTON_NEXT":
-        PAGE_curr += 1
+        users[chat_id]["page_info"]["PAGE_curr"] += 1
     elif callback.data == "curr_BUTTON_PREV":
-        PAGE_curr -= 1
-    kb = generate_currencies(currencyList[PAGE_curr], 4)
-    if PAGE_curr == 0:
+        users[chat_id]["page_info"]["PAGE_curr"] -= 1
+    kb = generate_currencies(currencyList[users[chat_id]["page_info"]["PAGE_curr"]], 4)
+    if users[chat_id]["page_info"]["PAGE_curr"] == 0:
         kb.add(types.InlineKeyboardButton(">", callback_data="curr_BUTTON_NEXT"))
-    elif PAGE_curr == 1:
+    elif users[chat_id]["page_info"]["PAGE_curr"] == 1:
         kb.add(types.InlineKeyboardButton("<", callback_data="curr_BUTTON_PREV"))
     bot.edit_message_reply_markup(
         chat_id=callback.message.chat.id,
@@ -156,8 +155,8 @@ def flight_type(callback):
 def send_welcome(message):
     chat_id = message.chat.id
     users[chat_id] = {}
-    users[chat_id] = {"flight_info": {}}
-    users[chat_id]
+    users[chat_id] = {"flight_info": {},
+                      "page_info": {}}
     bot.reply_to(
         message,
         "Hi, I'm ExpeditionExpertBot! I'll help you source cheap flights! Let's get started with your settings",
@@ -167,8 +166,7 @@ def send_welcome(message):
 
 def home_country(message):
     chat_id = message.chat.id
-    global PAGE_country
-    PAGE_country = 0
+    users[chat_id]["page_info"]["PAGE_country"] = 0
     kb1 = generate_inline(countryList[0], 3)
     btn_next = types.InlineKeyboardButton(">", callback_data="ctr_BUTTON_NEXT")
     kb1.add(btn_next)
@@ -177,8 +175,7 @@ def home_country(message):
 
 def currency_select(message):
     chat_id = message.chat.id
-    global PAGE_curr
-    PAGE_curr = 0
+    users[chat_id]["page_info"]["PAGE_curr"] = 0
     kb = generate_currencies(currencyList[0], 4)
     btn_next = types.InlineKeyboardButton(">", callback_data="curr_BUTTON_NEXT")
     kb.add(btn_next)
