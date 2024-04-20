@@ -42,14 +42,14 @@ https://t.me/ExpeditionExpertBot
 
 ## APIs used
 
-1. Tequila Search API by Kiwi.com: returns the best flights
-   (https://tequila.kiwi.com/)
+1. [Tequila Search API by Kiwi.com](https://tequila.kiwi.com/): returns the best flights
+   
 
 
-3. Tequila Locations API by Kiwi.com: returns airport IATA codes of given city
-   (https://tequila.kiwi.com/)
+3. [Tequila Locations API by Kiwi.com](https://tequila.kiwi.com/): returns airport IATA codes of given city
+   
 
 
 ## Hosting
 
-We hosted our Telegram Bot on PythonAnywhere by Anaconda. (https://www.pythonanywhere.com/)
+We hosted our Telegram Bot on [PythonAnywhere](https://www.pythonanywhere.com/) by Anaconda. 
