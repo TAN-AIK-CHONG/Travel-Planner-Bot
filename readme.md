@@ -6,7 +6,7 @@ ExpeditionExpertBot is a Telegram bot designed to assist users in finding and bo
 
 ## Demonstration Video
 
-[![Video Title](https://img.youtube.com/vi/HxpqyNPBtG0/0.jpg)](https://www.youtube.com/watch?v=HxpqyNPBtG0?si=lOm6VyotMMwhIewJ)
+[![Play Video](https://img.youtube.com/vi/HxpqyNPBtG0/0.jpg)](https://www.youtube.com/watch?v=HxpqyNPBtG0)
 
 
 ## Link
